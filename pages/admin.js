@@ -1,17 +1,17 @@
+"use client";
 import { useState, useEffect } from "react";
 
 export default function Admin() {
-  const [password, setPassword] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [password, setPassword] = useState("");
 
   // Check if already logged in
   useEffect(() => {
     fetch("/api/check-login")
       .then((res) => res.json())
-      .then((data) => setLoggedIn(data.loggedIn))
-      .catch(() => setLoggedIn(false));
+      .then((data) => setLoggedIn(data.loggedIn));
   }, []);
 
   async function handleLogin(e) {
@@ -20,12 +20,11 @@ export default function Admin() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
-      credentials: "include", // important to store cookie
     });
     const data = await res.json();
     if (data.success) {
       setLoggedIn(true);
-      setMessage("Logged in!");
+      setMessage("Logged in successfully");
     } else {
       setMessage("Wrong password");
     }
@@ -33,7 +32,10 @@ export default function Admin() {
 
   async function handleUpload(e) {
     e.preventDefault();
-    if (!file) return setMessage("Please select a file.");
+    if (!file) {
+      setMessage("Please select a file.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("file", file);
@@ -41,7 +43,6 @@ export default function Admin() {
     const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
-      credentials: "include", // sends the admin cookie
     });
     const data = await res.json();
     setMessage(data.message);
@@ -50,16 +51,15 @@ export default function Admin() {
   if (!loggedIn) {
     return (
       <div style={{ padding: 40 }}>
-        <h1>HR-GO Admin Login</h1>
+        <h1>Admin Login</h1>
         <form onSubmit={handleLogin}>
           <input
             type="password"
-            placeholder="Admin password"
+            placeholder="Enter admin password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <br /><br />
-          <button type="submit">Login</button>
+          <button type="submit" style={{ marginLeft: 10 }}>Login</button>
         </form>
         <p>{message}</p>
       </div>
@@ -75,8 +75,7 @@ export default function Admin() {
           accept=".txt"
           onChange={(e) => setFile(e.target.files[0])}
         />
-        <br /><br />
-        <button type="submit">Upload</button>
+        <button type="submit" style={{ marginLeft: 10 }}>Upload</button>
       </form>
       <p>{message}</p>
     </div>
