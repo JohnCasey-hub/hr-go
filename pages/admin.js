@@ -40,7 +40,7 @@ export default function Admin() {
     const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
-      credentials: "include",
+      credentials: "include"
     });
     const data = await res.json();
     setMessage(data.message);

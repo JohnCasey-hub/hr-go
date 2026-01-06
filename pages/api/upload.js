@@ -14,11 +14,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // ✅ Check admin login via cookie
-  const loggedIn = getCookie("adminLoggedIn", { req, res }) === "true";
-  if (!loggedIn) {
-    return res.status(401).json({ message: "Unauthorized: admin login required" });
-  }
+ // ✅ Check admin login via cookie
+const adminCookie = getCookie("adminLoggedIn", { req, res });
+console.log("adminLoggedIn value:", adminCookie); // For debugging
+
+if (adminCookie !== "true") {
+  return res.status(401).json({ message: "Unauthorized: admin login required" });
+}
 
   const uploadDir = path.join(process.cwd(), "data");
   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
