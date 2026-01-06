@@ -8,6 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "cookies-next": "^6.1.1",
+    "formidable": "^3.5.4",
     "next": "16.1.1",
     "openai": "^6.15.0",
     "react": "19.2.3",

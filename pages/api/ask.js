@@ -1,33 +1,57 @@
+import fs from "fs";
+import path from "path";
 import OpenAI from "openai";
 
 export default async function handler(req, res) {
   try {
     const { question } = req.body;
 
-    const openai = new OpenAI({
+    if (!question) {
+      return res.status(400).json({ answer: "No question provided." });
+    }
+
+    const policyPath = path.join(process.cwd(), "data", "policy.txt");
+
+    if (!fs.existsSync(policyPath)) {
+      return res.status(500).json({
+        answer: "Policy file not found. Please upload a policy first.",
+      });
+    }
+
+    const policyText = fs.readFileSync(policyPath, "utf8");
+
+    const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const prompt = `
-You are HR-GO, an AI HR assistant. Only answer using this simple company policy:
-"Employees are entitled to 28 days of paid holiday per year."
-
-If the answer is not in that policy, say: "I can't find this information in your company policies."
-
-Question: ${question}
-`;
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: prompt }],
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini",
       temperature: 0,
+      messages: [
+        {
+          role: "system",
+          content: `
+You are an HR assistant.
+You must answer ONLY using the policy text below.
+If the answer is not explicitly stated in the policy, reply:
+"I’m sorry, that information is not available in the current policy."
+
+POLICY:
+${policyText}
+          `,
+        },
+        {
+          role: "user",
+          content: question,
+        },
+      ],
     });
 
-    const answer = response.choices[0].message.content.trim();
-
-    res.status(200).json({ answer });
-  } catch (err) {
-    console.error(err);
+    res.status(200).json({
+      answer: response.choices[0].message.content,
+    });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ answer: "Error generating answer." });
   }
 }
