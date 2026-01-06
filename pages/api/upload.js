@@ -9,31 +9,25 @@ export const config = {
   },
 };
 
-export default function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
 
-  // ✅ check login cookie
-  const isLoggedIn = getCookie("admin_logged_in", { req, res }) === "true";
-  if (!isLoggedIn) {
+  // ✅ Check admin login via cookie
+  const loggedIn = getCookie("adminLoggedIn", { req, res }) === "true";
+  if (!loggedIn) {
     return res.status(401).json({ message: "Unauthorized: admin login required" });
   }
 
   const uploadDir = path.join(process.cwd(), "data");
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-  }
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
-  const form = new IncomingForm({
-    uploadDir,
-    keepExtensions: true,
-  });
+  const form = new IncomingForm({ uploadDir, keepExtensions: true });
 
   form.parse(req, (err, fields, files) => {
-    if (err) {
-      return res.status(500).json({ message: "Upload failed" });
-    }
+    if (err) return res.status(500).json({ message: "Upload failed" });
 
-    // handle single file
     const uploadedFile = Array.isArray(files.file) ? files.file[0] : files.file;
 
     if (!uploadedFile || !uploadedFile.filepath) {
