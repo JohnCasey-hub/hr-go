@@ -14,8 +14,9 @@ export default function handler(req, res) {
       res,
       httpOnly: true,
       path: "/",
-      maxAge: 3600,
+      maxAge: 3600, // 1 hour
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production", // 🔒 Required for Vercel HTTPS
     });
 
     return res.status(200).json({ success: true });

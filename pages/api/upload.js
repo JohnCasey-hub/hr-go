@@ -28,6 +28,7 @@ export default async function handler(req, res) {
   form.parse(req, (err, fields, files) => {
     if (err) return res.status(500).json({ message: "Upload failed" });
 
+    // Support single or multiple files
     const uploadedFile = Array.isArray(files.file) ? files.file[0] : files.file;
 
     if (!uploadedFile || !uploadedFile.filepath) {
@@ -35,7 +36,12 @@ export default async function handler(req, res) {
     }
 
     const newPath = path.join(uploadDir, "policy.txt");
-    fs.renameSync(uploadedFile.filepath, newPath);
+
+    try {
+      fs.renameSync(uploadedFile.filepath, newPath);
+    } catch (renameError) {
+      return res.status(500).json({ message: "Failed to move uploaded file" });
+    }
 
     res.status(200).json({ message: "Policy uploaded successfully" });
   });
