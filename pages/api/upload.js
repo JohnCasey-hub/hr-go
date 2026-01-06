@@ -3,6 +3,15 @@ import path from "path";
 import { IncomingForm } from "formidable";
 import { getCookie } from "cookies-next";
 
+export default async function handler(req, res) {
+  console.log("Cookies in request:", req.headers.cookie);
+  const loggedIn = getCookie("adminLoggedIn", { req, res });
+  console.log("adminLoggedIn value:", loggedIn);
+
+  if (!loggedIn || loggedIn !== "true") {
+    return res.status(401).json({ message: "Unauthorized: admin login required" });
+  }
+
 export const config = {
   api: {
     bodyParser: false,
